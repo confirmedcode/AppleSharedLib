@@ -538,7 +538,7 @@ class Auth: NSObject {
             }
             .catch { error in
                 let eCode = (error as NSError).code
-                if eCode == -1200 || eCode == -1001 || eCode == -1009 { //propagate bad Internet instead of switching API
+                if eCode == -1200 || eCode == -1001 || eCode == -1009 || eCode == -1004 { //propagate bad Internet instead of switching API
                     callback(false, error.localizedDescription, Global.kInternetDownError)
                     signInError = Global.kInternetDownError
                 }
@@ -622,6 +622,7 @@ class Auth: NSObject {
      */
     public static func clearCookies() {
         URLCache.shared.removeAllCachedResponses()
+        URLCache.shared = URLCache(memoryCapacity: 0, diskCapacity: 0, diskPath: nil)
         
         if let cookieStorage = Alamofire.SessionManager.default.session.configuration.httpCookieStorage {
             for cookie in cookieStorage.cookies ?? [] {
