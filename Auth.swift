@@ -292,17 +292,24 @@ class Auth: NSObject {
         let cstorage = Alamofire.SessionManager.default.session.configuration.httpCookieStorage
         if let cookies = cstorage?.cookies {
             for cookie in cookies {
-                if !Global.isVersion(version: .v3API) && UserDefaults.standard.bool(forKey: Global.kIsOnFinalDeprecatedV1V2) {
-                    if cookie.domain.contains("confirmedvpn.co") {
+                if let timeUntilExpire = cookie.expiresDate?.timeIntervalSinceNow {
+                    if !Global.isVersion(version: .v3API) && UserDefaults.standard.bool(forKey: Global.kIsOnFinalDeprecatedV1V2) {
+                        if cookie.domain.contains("confirmedvpn.co") && timeUntilExpire > 120.0 {
+                            hasCookie = true
+                        }
+                    }
+                    
+                    if cookie.domain.contains("confirmedvpn.com") && timeUntilExpire > 120.0 {
                         hasCookie = true
                     }
                 }
-                
-                if cookie.domain.contains("confirmedvpn.com") {
-                    hasCookie = true
-                }
             }
         }
+        
+        if !hasCookie {
+            Auth.clearCookies()
+        }
+        
         return hasCookie
     }
     
