@@ -73,10 +73,11 @@ class Global {
     static var vpnDomain : String {
         if Utils.isAppInProduction() {
             if Global.isVersion(version: .v1API) || Global.isVersion(version: .v2API)  { //deprecated domain
-                if UserDefaults.standard.bool(forKey: Global.kIsOnFinalDeprecatedV1V2) {
-                    return "confirmedvpn.co"
+                if !UserDefaults.standard.bool(forKey: Global.kIsOnFinalDeprecatedV1V2) {
+                    Global.keychain[Global.kConfirmedP12Key] = nil
+                    Global.keychain[Global.kConfirmedID] = nil
                 }
-                return "confirmedvpn.com"
+                return "confirmedvpn.co"
             }
             return "confirmedvpn.com"
         }
@@ -231,7 +232,7 @@ class Global {
     static let kNoError = 0
     static let kEmailNotConfirmed = 1
     static let kIncorrectLogin = 2
-    static let kInvalidEmail = 3
+    static let kRequestFieldValidationError = 3
     static let kMobileSubscriptionOnly = 38
     static let kEmailAlreadyUsed = 40
     static let kReceiptAlreadyUsed = 48
@@ -249,7 +250,7 @@ class Global {
     }
     
     private static var kAuthErrorCodes = [ kEmailNotConfirmed : "Please check your e-mail for a confirmation link.",
-                                   kInvalidEmail : "Invalid e-mail.",
+                                   kRequestFieldValidationError : "Invalid field.",
                                    kInvalidAuth : "Incorrect login.",
                                    kIncorrectLogin : "Incorrect login.",
                                    kMobileSubscriptionOnly : "Please upgrade from mobile only at https://confirmedvpn.com",

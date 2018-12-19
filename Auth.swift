@@ -347,7 +347,7 @@ class Auth: NSObject {
         
         if let result = Utils.validateCredentialFormat(email: email, password: password, passwordConfirmation: passwordConfirmation) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { //add delays to allow animation
-                createUserCallback(false, result, Global.kInvalidEmail)
+                createUserCallback(false, result, Global.kRequestFieldValidationError)
             }
             return
         }
@@ -469,6 +469,8 @@ class Auth: NSObject {
                             createUserCallback(false, Global.errorMessageForError(eCode: eCode))
                         case Global.kReceiptAlreadyUsed:
                             createUserCallback(false, Global.errorMessageForError(eCode: eCode))
+                        case Global.kRequestFieldValidationError:
+                            createUserCallback(false, serverResponse.message ?? "Unknown error")
                         default:
                             createUserCallback(false, Global.errorMessageForError(eCode: eCode))
                             print("Unrecognized error")
