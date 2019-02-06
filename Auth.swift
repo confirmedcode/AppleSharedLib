@@ -101,7 +101,6 @@ class Auth: NSObject {
         {
             let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: URL)
             Alamofire.SessionManager.default.session.configuration.httpCookieStorage?.setCookies(cookies, for: URL, mainDocumentURL: nil)
-            DDLogInfo("Sign in response \(cookies)")
             
             //put in a method later
             Global.keychain[Global.kConfirmedID] = nil
@@ -115,6 +114,28 @@ class Auth: NSObject {
         
         return false
     }
+
+    public static func processPartnerCode() -> String? {
+        let pasteboard = UIPasteboard.general
+        if let partnerCodeData = pasteboard.data(forPasteboardType: Global.kPartnerCodePasteboardType), let partnerCode = String.init(data: partnerCodeData, encoding: .utf8)
+        {
+            var components = partnerCode.split(separator: "-")
+            if components.count == 3 && components[0] == Global.kConfirmedUniquePartnerCode { //check for Confirmed unique prefix
+                Global.sharedUserDefaults().set(partnerCode, forKey: Global.kPartnerCodePasteboardType)
+            }
+        }
+        
+        if let partnerCode = Global.sharedUserDefaults().value(forKey: Global.kPartnerCodePasteboardType) as? String {
+            var components = partnerCode.split(separator: "-")
+            if components.count == 3 && components[0] == Global.kConfirmedUniquePartnerCode { //check for Confirmed unique prefix
+                components.remove(at: 0)
+                let output = components.joined(separator: "-")
+                return output
+            }
+        }
+        
+        return nil
+    }
     
     /*
      * /signin for cookie only returns 200 on success
@@ -127,8 +148,13 @@ class Auth: NSObject {
         sessionManager.retrier = nil
         Auth.clearCookies()
         
+        var signinParams = parameters
+        if let partnerCode = processPartnerCode() {
+            signinParams["partner"] = partnerCode
+        }
+        
         return Promise { seal in
-            sessionManager.request(Global.signinURL, method: .post, parameters : parameters).responseJSON { response in
+            sessionManager.request(Global.signinURL, method: .post, parameters : signinParams).responseJSON { response in
                 switch response.result {
                 case .success:
                     if response.response?.statusCode == 200 {
