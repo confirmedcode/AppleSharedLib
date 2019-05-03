@@ -199,18 +199,22 @@ class Global {
         return APIVersionType.v3API
     }
     
-    static var vpnSavedRegionKey : String { get { return apiVersionPrefix() + "savedRegion" }}
+    static var vpnSavedRegionKey : String { get { return apiVersionPrefix() + "savedRegion-universal" }}
     static var kConfirmedP12Key : String { get { return apiVersionPrefix() + "TunnelsP12" }}
+    static var kConfirmedPrivateKey : String { get { return apiVersionPrefix() + "TunnelsPrivateKey" }}
+    static var kConfirmedCACertKey : String { get { return apiVersionPrefix() + "TunnelsCACert" }}
+    static var kConfirmedCLCertKey : String { get { return apiVersionPrefix() + "TunneCLCert" }}
     static var kConfirmedID : String { get { return apiVersionPrefix() + "TunnelsID" }}
     static var kConfirmedEmail : String { get { return apiVersionPrefix() + "TunnelsEmail" }}
     static var kConfirmedPassword : String { get { return apiVersionPrefix() + "TunnelsPassword" }}
     static var kConfirmedReceiptKey : String { get { return apiVersionPrefix() + "TunnelsReceipt" }}
+    static var kPartnerCode = "PartnerCode"
     static var kLastEnvironment = "lastEnvironment"
     static let kPlatformiOS = "ios"
     static let kPlatformMac = "mac"
     static let kPartnerCodePasteboardType = "com.confirmed.tunnels.PartnerCode"
     static let kConfirmedUniquePartnerCode = "266347633"
-    
+
     static let kConfirmedAPIVersion = "API-Version"
     
     static let contentBlockerBundleID = "com.confirmed.tunnels.Confirmed-Blocker"
@@ -368,11 +372,10 @@ extension APIVersionType {
 #endif
 
 //Server location structure
-struct ServerEndpoint {
+struct ServerMetadata {
     var countryName: String
     var flagImagePath: String
     var countryCode: String
-    var endpoint: String
 }
 
 //Response fields from server

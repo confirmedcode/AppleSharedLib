@@ -114,7 +114,7 @@ class Auth: NSObject {
         
         return false
     }
-
+    
     public static func processPartnerCode() -> String? {
         let pasteboard = UIPasteboard.general
         if let partnerCodeData = pasteboard.data(forPasteboardType: Global.kPartnerCodePasteboardType), let partnerCode = String.init(data: partnerCodeData, encoding: .utf8)
@@ -205,7 +205,34 @@ class Auth: NSObject {
         
     }
     
-    
+    static func extractP12Cert() {
+        if let userP12B64 = Global.keychain[Global.kConfirmedP12Key],
+            let p12Data = Data(base64Encoded: userP12B64)
+        {
+            let p12DataBytes = Int32(p12Data.count)
+            p12Data.withUnsafeBytes({ (bytes: UnsafePointer<Int8>) -> Void in
+                var caCert : UnsafeMutablePointer<UInt8>?
+                var caCertLen : UInt32 = 0
+                var clCert : UnsafeMutablePointer<UInt8>?
+                var clCertLen : UInt32 = 0
+                var privateKey : UnsafeMutablePointer<UInt8>?
+                var privateKeyLength : UInt32 = 0
+                
+                processP12(bytes, p12DataBytes, &caCert, &caCertLen, &clCert, &clCertLen, &privateKey, &privateKeyLength)
+                
+                let privateKeyString = String(cString: privateKey!)
+                let caCertString = String(cString: caCert!)
+                let clCertString = String(cString: clCert!)
+                Global.keychain[Global.kConfirmedPrivateKey] = privateKeyString.trimAfterPhrase(phrase: "-----END PRIVATE KEY-----")
+                Global.keychain[Global.kConfirmedCACertKey] = caCertString.trimAfterPhrase(phrase: "-----END CERTIFICATE-----")
+                Global.keychain[Global.kConfirmedCLCertKey] = clCertString.trimAfterPhrase(phrase: "-----END CERTIFICATE-----")
+            })
+        }
+        else {
+            //unable to extract, force IPSEC
+            Utils.setActiveProtocol(activeProtocol: IPSecV3.protocolName)
+        }
+    }
     /*
      * attempt /signin for supplied e-mail credentials (if inputted)
      * this is only from sign in, so no need to try other authentication
@@ -269,6 +296,13 @@ class Auth: NSObject {
                 cookieCallback(true, 0)
                 return
             }
+            
+            if email == nil || password == nil {
+                //reset to v3 version for receipt only as they are universal
+                UserDefaults.standard.set(APIVersionType.v3API, forKey: Global.kConfirmedAPIVersion)
+                UserDefaults.standard.synchronize()
+            }
+            
             
             //try active API version first
             attemptAllAuthForVersion(email: email, password: password)
@@ -523,6 +557,7 @@ class Auth: NSObject {
         }
     }
     
+    
     //MARK: - GET KEY METHODS
     /*
      * method to get b64 encoded p12 & user id
@@ -556,6 +591,7 @@ class Auth: NSObject {
                     NotificationCenter.default.post(name: .userSignedIn, object: nil)
                     Global.keychain[Global.kConfirmedP12Key] = userB64
                     Global.keychain[Global.kConfirmedID] = userID
+                    Auth.extractP12Cert()
                     signInError = Global.kNoError
                     callback(true, "", 0)
                 }
@@ -644,8 +680,11 @@ class Auth: NSObject {
         }
         
         UserDefaults.standard.removeObject(forKey:Global.kConfirmedAPIVersion)
-        
-        VPNController.forceVPNOff()
+        if let defaults = UserDefaults(suiteName: SharedUtils.userDefaultsSuite) {
+            defaults.removeObject(forKey: Utils.kActiveProtocol)
+            defaults.synchronize()
+        }
+        VPNController.shared.forceVPNOff()
         Auth.clearCookies()
     }
     

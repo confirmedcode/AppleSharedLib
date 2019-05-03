@@ -12,7 +12,7 @@
 import Foundation
 import NetworkExtension
 import CocoaLumberjackSwift
-
+import CoreTelephony
 
 class SharedUtils: NSObject {
     
@@ -22,56 +22,58 @@ class SharedUtils: NSObject {
     static let userDefaultsSuite = "group.com.confirmed.tunnelsMac"
     #endif
     
-    static func getSavedRegion() -> String {
+    public static let kActiveProtocol = "ActiveProtocol"
+    
+    static func getSavedRegion() -> ServerRegion {
         DDLogInfo("API Version - \(Global.vpnSavedRegionKey)")
-        if let reg = UserDefaults.standard.string(forKey: Global.vpnSavedRegionKey) {
+        if let reg = UserDefaults.standard.string(forKey: Global.vpnSavedRegionKey), let serverRegion = ServerRegion.init(rawValue: reg) {
             DDLogInfo("Getting saved region - \(reg)")
-            return reg;
+            return serverRegion
         }
         else {
             //intelligently determine area based on current region
             let theLocale = NSLocale.autoupdatingCurrent
             
-            var nearestRegion = Global.endPoint(base: "us-west")
+            var nearestRegion = ServerRegion.usWest
             
             if theLocale.regionCode! == "US" {
                 let theTZ = TimeZone.autoupdatingCurrent.abbreviation()!
                 if theTZ == "EST" || theTZ == "EDT" || theTZ == "CST" {
-                    nearestRegion = Global.endPoint(base: "us-east")
+                    nearestRegion = ServerRegion.usEast
                 }
             }
             if theLocale.regionCode! == "GB" {
-                nearestRegion = Global.endPoint(base: "eu-london")
+                nearestRegion = ServerRegion.euLondon
             }
             if theLocale.regionCode! == "IE" {
-                nearestRegion = Global.endPoint(base: "eu-ireland")
+                nearestRegion = ServerRegion.euLondon
             }
             if theLocale.regionCode! == "CA"  {
-                nearestRegion = Global.endPoint(base: "canada")
+                nearestRegion = ServerRegion.canada
             }
             if theLocale.regionCode! == "KO"  {
-                nearestRegion = Global.endPoint(base: "ap-seoul")
+                nearestRegion = ServerRegion.seoul
             }
             if theLocale.regionCode! == "ID" /* Indonesia */ || theLocale.regionCode! == "SG" /* Singapore */ || theLocale.regionCode! == "MY" /* Malaysia */ || theLocale.regionCode! == "PH" /* Phillipines */ || theLocale.regionCode! == "TH" /* Thailand */ || theLocale.regionCode! == "TW" /* Taiwan */ || theLocale.regionCode! == "VN" /* Vietnam */ {
-                nearestRegion = Global.endPoint(base: "ap-singapore")
+                nearestRegion = ServerRegion.singapore
             }
             if theLocale.regionCode! == "DE" || theLocale.regionCode! == "FR" || theLocale.regionCode! == "IT" || theLocale.regionCode! == "PT" || theLocale.regionCode! == "ES" || theLocale.regionCode! == "AT" || theLocale.regionCode! == "PL" || theLocale.regionCode! == "RU" || theLocale.regionCode! == "UA" || theLocale.regionCode! == "NG" || theLocale.regionCode! == "TR" /* Turkey */ || theLocale.regionCode! == "ZA" /* South Africa */  {
-                nearestRegion = Global.endPoint(base: "eu-frankfurt")
+                nearestRegion = ServerRegion.euFrankfurt
             }
             if theLocale.regionCode! == "AU" || theLocale.regionCode! == "NZ" {
-                nearestRegion = Global.endPoint(base: "ap-sydney")
+                nearestRegion = ServerRegion.sydney
             }
             if theLocale.regionCode! == "AE" || theLocale.regionCode! == "IN" || theLocale.regionCode! == "PK" || theLocale.regionCode! == "BD" || theLocale.regionCode! == "QA" /* Qatar */ || theLocale.regionCode! == "SA" /* Saudi */{ //UAE
-                nearestRegion = Global.endPoint(base: "ap-mumbai")
+                nearestRegion = ServerRegion.mumbai
             }
             if theLocale.regionCode! == "EG" { //EGYPT
-                nearestRegion = Global.endPoint(base: "eu-frankfurt")
+                nearestRegion = ServerRegion.euFrankfurt
             }
             if theLocale.regionCode! == "JP" {
-                nearestRegion = Global.endPoint(base: "ap-tokyo")
+                nearestRegion = ServerRegion.tokyo
             }
             if theLocale.regionCode! == "BR" || theLocale.regionCode! == "CO" || theLocale.regionCode! == "VE" || theLocale.regionCode! == "AR" {
-                nearestRegion = Global.endPoint(base: "sa")
+                nearestRegion = ServerRegion.brazil
             }
             
             setSavedRegion(region: nearestRegion);
@@ -79,9 +81,9 @@ class SharedUtils: NSObject {
         }
     }
     
-    static func setSavedRegion(region: String) {
+    static func setSavedRegion(region: ServerRegion) {
         let defaults = UserDefaults.standard
-        defaults.set(region, forKey: Global.vpnSavedRegionKey)
+        defaults.set(region.rawValue, forKey: Global.vpnSavedRegionKey)
         defaults.synchronize()
     }
     
@@ -349,6 +351,33 @@ class SharedUtils: NSObject {
             NotificationCenter.post(name: .switchingAPIVersions)
         }
         
+    }
+    
+    static func setActiveProtocol(activeProtocol : String) {
+        if let defaults = UserDefaults(suiteName: SharedUtils.userDefaultsSuite) {
+            defaults.set(activeProtocol, forKey: kActiveProtocol)
+            defaults.synchronize()
+        }
+    }
+    
+    static func getActiveProtocol() -> String {
+        if let defaults = UserDefaults(suiteName: SharedUtils.userDefaultsSuite), let activeProtocol = defaults.value(forKey: kActiveProtocol) as? String {
+            return activeProtocol
+        }
+        else {
+            let networkInfo = CTTelephonyNetworkInfo()
+            if let countryCode = (Locale.current as NSLocale).object(forKey: .countryCode) as? String, let carrier = networkInfo.subscriberCellularProvider, let carrierName = carrier.carrierName{
+                if countryCode == "AE" && carrierName.lowercased() == "etisalat" {
+                    setActiveProtocol(activeProtocol: OpenVPN.protocolName)
+                    return OpenVPN.protocolName
+                }
+            }
+            
+            setActiveProtocol(activeProtocol: IPSecV3.protocolName)
+        }
+        
+        
+        return IPSecV3.protocolName
     }
 }
 
