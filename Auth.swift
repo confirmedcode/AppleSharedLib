@@ -122,6 +122,7 @@ class Auth: NSObject {
             var components = partnerCode.split(separator: "-")
             if components.count == 3 && components[0] == Global.kConfirmedUniquePartnerCode { //check for Confirmed unique prefix
                 Global.sharedUserDefaults().set(partnerCode, forKey: Global.kPartnerCodePasteboardType)
+                Global.sharedUserDefaults().synchronize()
             }
         }
         

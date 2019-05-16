@@ -22,7 +22,7 @@ class SharedUtils: NSObject {
     static let userDefaultsSuite = "group.com.confirmed.tunnelsMac"
     #endif
     
-    public static let kActiveProtocol = "ActiveProtocol"
+    public static let kActiveProtocol = "ConfirmedActiveProtocol"
     
     static func getSavedRegion() -> ServerRegion {
         DDLogInfo("API Version - \(Global.vpnSavedRegionKey)")
@@ -367,9 +367,10 @@ class SharedUtils: NSObject {
         else {
             let networkInfo = CTTelephonyNetworkInfo()
             if let countryCode = (Locale.current as NSLocale).object(forKey: .countryCode) as? String, let carrier = networkInfo.subscriberCellularProvider, let carrierName = carrier.carrierName{
+                setActiveProtocol(activeProtocol: IPSecV3.protocolName)
                 if countryCode == "AE" && carrierName.lowercased() == "etisalat" {
-                    setActiveProtocol(activeProtocol: OpenVPN.protocolName)
-                    return OpenVPN.protocolName
+                    //setActiveProtocol(activeProtocol: IPSecV3.protocolName)
+                    //return OpenVPN.protocolName
                 }
             }
             
