@@ -592,7 +592,9 @@ class Auth: NSObject {
                     NotificationCenter.default.post(name: .userSignedIn, object: nil)
                     Global.keychain[Global.kConfirmedP12Key] = userB64
                     Global.keychain[Global.kConfirmedID] = userID
-                    Auth.extractP12Cert()
+                    if Global.isVersion(version: .v3API) {
+                        Auth.extractP12Cert()
+                    }
                     signInError = Global.kNoError
                     callback(true, "", 0)
                 }
