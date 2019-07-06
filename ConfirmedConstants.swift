@@ -5,11 +5,10 @@
 //
 //  Copyright © 2018 Confirmed, Inc. All rights reserved.
 //
-
 #if os(iOS)
-    import UIKit
+import UIKit
 #elseif os(OSX)
-    import Foundation
+import Foundation
 #endif
 import KeychainAccess
 import Reachability
@@ -53,9 +52,9 @@ class Global {
             }
             else {
                 #if os(iOS)
-                    return ""
+                return ""
                 #else
-                    return "rdar://12503102" //macOS requires a password here
+                return "rdar://12503102" //macOS requires a password here
                 #endif
             }
         }
@@ -214,7 +213,7 @@ class Global {
     static let kPlatformMac = "mac"
     static let kPartnerCodePasteboardType = "com.confirmed.tunnels.PartnerCode"
     static let kConfirmedUniquePartnerCode = "266347633"
-
+    
     static let kConfirmedAPIVersion = "API-Version"
     
     static let contentBlockerBundleID = "com.confirmed.tunnels.Confirmed-Blocker"
@@ -256,13 +255,13 @@ class Global {
     }
     
     private static var kAuthErrorCodes = [ kEmailNotConfirmed : "Please check your e-mail for a confirmation link.",
-                                   kRequestFieldValidationError : "Invalid field.",
-                                   kInvalidAuth : "Incorrect login.",
-                                   kIncorrectLogin : "Incorrect login.",
-                                   kMobileSubscriptionOnly : "Please upgrade from mobile only at https://confirmedvpn.com",
-                                   kEmailAlreadyUsed : "This e-mail is already registered to a user.",
-                                   kReceiptAlreadyUsed : "Your account is already associated with another email.",
-                                   kUnknownError : "Unknown error."
+                                           kRequestFieldValidationError : "Invalid field.",
+                                           kInvalidAuth : "Incorrect login.",
+                                           kIncorrectLogin : "Incorrect login.",
+                                           kMobileSubscriptionOnly : "Please upgrade from mobile only at https://confirmedvpn.com",
+                                           kEmailAlreadyUsed : "This e-mail is already registered to a user.",
+                                           kReceiptAlreadyUsed : "Your account is already associated with another email.",
+                                           kUnknownError : "Unknown error."
     ]
     
     //MARK: - USER DEFAULTS
@@ -288,7 +287,6 @@ class Global {
     static let privacyText = "Privacy".localized()
     static let benefitsText = "Benefits".localized()
     static let speedTestText = "Speed Test".localized()
-    static let installWidgetText = "Install Widget".localized()
     static let whitelistingText = "Whitelisting".localized()
     static let contentBlockerText = "Content Blocker".localized()
     
@@ -332,43 +330,43 @@ extension APIVersionType {
 }
 
 #if os(iOS)
-    extension UIImage {
-        static let questionIcon = UIImage.init(named: "question_mark")?.withRenderingMode(.alwaysTemplate)
-        static let privacyIcon = UIImage.init(named: "privacy_policy")?.withRenderingMode(.alwaysTemplate)
-        static let informationIcon = UIImage.init(named: "information_icon")?.withRenderingMode(.alwaysTemplate)
-        static let lightningIconThick = UIImage.init(named: "lightning_icon_thick")?.withRenderingMode(.alwaysTemplate)
-        static let installIcon = UIImage.init(named: "install_icon")?.withRenderingMode(.alwaysTemplate)
-        static let checkIcon = UIImage.init(named: "checkmark")?.withRenderingMode(.alwaysTemplate)
-        static let blockIcon = UIImage.init(named: "block_icon")?.withRenderingMode(.alwaysTemplate)
-        static let accountIcon = UIImage.init(named: "account_icon")?.withRenderingMode(.alwaysTemplate)
-        static let powerIconPadded = UIImage(named: "power_button_padded")?.withRenderingMode(.alwaysTemplate)
-    }
-    
-    extension UIColor {
-        static let tunnelsBlueColor = UIColor.init(red: 0/255.0, green: 173/255.0, blue: 231/255.0, alpha: 1.0)
-        static let tunnelsLightBlueColor = UIColor.init(red: 0/255.0, green: 173/255.0, blue: 231/255.0, alpha: 1.0)
-        static let tunnelsErrorColor = UIColor.init(red: 200/255.0, green: 20.0/255.0, blue: 20/255.0, alpha: 1.0)
-    }
-    
+extension UIImage {
+    static let questionIcon = UIImage.init(named: "question_mark")?.withRenderingMode(.alwaysTemplate)
+    static let privacyIcon = UIImage.init(named: "privacy_policy")?.withRenderingMode(.alwaysTemplate)
+    static let informationIcon = UIImage.init(named: "information_icon")?.withRenderingMode(.alwaysTemplate)
+    static let lightningIconThick = UIImage.init(named: "lightning_icon_thick")?.withRenderingMode(.alwaysTemplate)
+    static let installIcon = UIImage.init(named: "install_icon")?.withRenderingMode(.alwaysTemplate)
+    static let checkIcon = UIImage.init(named: "checkmark")?.withRenderingMode(.alwaysTemplate)
+    static let blockIcon = UIImage.init(named: "block_icon")?.withRenderingMode(.alwaysTemplate)
+    static let accountIcon = UIImage.init(named: "account_icon")?.withRenderingMode(.alwaysTemplate)
+    static let powerIconPadded = UIImage(named: "power_button_padded")?.withRenderingMode(.alwaysTemplate)
+}
+
+extension UIColor {
+    static let tunnelsBlueColor = UIColor.init(red: 0/255.0, green: 173/255.0, blue: 231/255.0, alpha: 1.0)
+    static let tunnelsLightBlueColor = UIColor.init(red: 0/255.0, green: 173/255.0, blue: 231/255.0, alpha: 1.0)
+    static let tunnelsErrorColor = UIColor.init(red: 200/255.0, green: 20.0/255.0, blue: 20/255.0, alpha: 1.0)
+}
+
 #elseif os(OSX)
-    extension NSImage {
-        static let checkmarkIcon = NSImage.init(named: NSImage.Name(rawValue: "checkmark"))
-        static let blockIcon = NSImage.init(named: NSImage.Name(rawValue: "block_icon"))
-        static let statusBarIcon = NSImage(named: NSImage.Name(rawValue: "StatusBarImage"))
-        static let statusBarIconDisabled = NSImage(named: NSImage.Name(rawValue: "status_bar_image_disabled"))
-        static let settingsIcon = NSImage(named: NSImage.Name(rawValue: "settings_icon"))
-        static let powerIcon = NSImage(named: NSImage.Name(rawValue: "power_button"))
-        static let downArrow = NSImage.init(named: NSImage.Name(rawValue: "down_arrow"))
-        static let downArrowWhite = NSImage.init(named: NSImage.Name(rawValue: "down_arrow_white"))
-        static let upArrow = NSImage.init(named: NSImage.Name(rawValue: "up_arrow"))
-        static let upArrowWhite = NSImage.init(named: NSImage.Name(rawValue: "up_arrow_white"))
-    }
-    
-    extension NSColor {
-        static let tunnelsBlueColor = NSColor.init(red: 0/255.0, green: 173/255.0, blue: 231/255.0, alpha: 1.0)
-        static let tunnelsLightBlueColor = NSColor.init(red: 0/255.0, green: 173/255.0, blue: 231/255.0, alpha: 1.0)
-        static let tunnelsErrorColor = NSColor.init(red: 200/255.0, green: 20.0/255.0, blue: 20/255.0, alpha: 1.0)
-    }
+extension NSImage {
+    static let checkmarkIcon = NSImage.init(named: NSImage.Name(rawValue: "checkmark"))
+    static let blockIcon = NSImage.init(named: NSImage.Name(rawValue: "block_icon"))
+    static let statusBarIcon = NSImage(named: NSImage.Name(rawValue: "StatusBarImage"))
+    static let statusBarIconDisabled = NSImage(named: NSImage.Name(rawValue: "status_bar_image_disabled"))
+    static let settingsIcon = NSImage(named: NSImage.Name(rawValue: "settings_icon"))
+    static let powerIcon = NSImage(named: NSImage.Name(rawValue: "power_button"))
+    static let downArrow = NSImage.init(named: NSImage.Name(rawValue: "down_arrow"))
+    static let downArrowWhite = NSImage.init(named: NSImage.Name(rawValue: "down_arrow_white"))
+    static let upArrow = NSImage.init(named: NSImage.Name(rawValue: "up_arrow"))
+    static let upArrowWhite = NSImage.init(named: NSImage.Name(rawValue: "up_arrow_white"))
+}
+
+extension NSColor {
+    static let tunnelsBlueColor = NSColor.init(red: 0/255.0, green: 173/255.0, blue: 231/255.0, alpha: 1.0)
+    static let tunnelsLightBlueColor = NSColor.init(red: 0/255.0, green: 173/255.0, blue: 231/255.0, alpha: 1.0)
+    static let tunnelsErrorColor = NSColor.init(red: 200/255.0, green: 20.0/255.0, blue: 20/255.0, alpha: 1.0)
+}
 #endif
 
 //Server location structure

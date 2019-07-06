@@ -593,7 +593,7 @@ class Auth: NSObject {
                     Global.keychain[Global.kConfirmedP12Key] = userB64
                     Global.keychain[Global.kConfirmedID] = userID
                     if Global.isVersion(version: .v3API) {
-                        Auth.extractP12Cert()
+                      Auth.extractP12Cert()
                     }
                     signInError = Global.kNoError
                     callback(true, "", 0)

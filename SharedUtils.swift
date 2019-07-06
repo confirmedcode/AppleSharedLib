@@ -111,23 +111,43 @@ class SharedUtils: NSObject {
     static func getUserWhitelist() -> Dictionary<String, Any> {
         let defaults = Global.sharedUserDefaults()
         
-        if let domains = defaults.dictionary(forKey:Global.kUserWhitelistedDomains) {
-            return domains
+        if let domains = defaults.dictionary(forKey:Global.kUserWhitelistedDomains) as? Dictionary<String, Bool> {
+            return domains;
         }
-        return Dictionary()
+        return Dictionary();
+    }
+    
+    static func getUserWhitelistAsArray() -> [(String, Any)] {
+        let defaults = Global.sharedUserDefaults()
+        
+        if let domains = defaults.dictionary(forKey:Global.kUserWhitelistedDomains) as? Dictionary<String, Any> {
+            return domains.sorted { $0.key < $1.key };
+        }
+        return []
     }
     
     static func getConfirmedWhitelist() -> Dictionary<String, Any> {
         let defaults = Global.sharedUserDefaults()
         
-        if let domains = defaults.dictionary(forKey:Global.kConfirmedWhitelistedDomains) {
-            return domains
+        if let domains = defaults.dictionary(forKey:Global.kConfirmedWhitelistedDomains) as? Dictionary<String, Bool> {
+            return domains;
         }
-        return Dictionary()
+        return Dictionary();
+        
+    }
+    
+    static func getConfirmedWhitelistAsArray() -> [(String, Any)] {
+        let defaults = Global.sharedUserDefaults()
+        
+        if let domains = defaults.dictionary(forKey:Global.kConfirmedWhitelistedDomains) as? Dictionary<String, Any> {
+            return domains.sorted { $0.key < $1.key };
+        }
+        return []
     }
     
     static func addDomainToUserWhitelist(key : String) {
         var domains = getUserWhitelist()
+        
         domains[key] = NSNumber.init(value: true)
         
         let defaults = Global.sharedUserDefaults()
@@ -354,10 +374,10 @@ class SharedUtils: NSObject {
     }
     
     static func setActiveProtocol(activeProtocol : String) {
-        if let defaults = UserDefaults(suiteName: SharedUtils.userDefaultsSuite) {
-            defaults.set(activeProtocol, forKey: kActiveProtocol)
-            defaults.synchronize()
-        }
+      if let defaults = UserDefaults(suiteName: SharedUtils.userDefaultsSuite) {
+        defaults.set(activeProtocol, forKey: kActiveProtocol)
+        defaults.synchronize()
+      }
     }
     
     static func getActiveProtocol() -> String {
