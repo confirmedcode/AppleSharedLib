@@ -381,21 +381,6 @@ class SharedUtils: NSObject {
     }
     
     static func getActiveProtocol() -> String {
-//        if let defaults = UserDefaults(suiteName: SharedUtils.userDefaultsSuite), let activeProtocol = defaults.value(forKey: kActiveProtocol) as? String {
-//            return activeProtocol
-//        }
-//        else {
-//            let networkInfo = CTTelephonyNetworkInfo()
-//            if let countryCode = (Locale.current as NSLocale).object(forKey: .countryCode) as? String, let carrier = networkInfo.subscriberCellularProvider, let carrierName = carrier.carrierName{
-//                setActiveProtocol(activeProtocol: IPSecV3.protocolName)
-//                if countryCode == "AE" && carrierName.lowercased() == "etisalat" {
-//                    //setActiveProtocol(activeProtocol: IPSecV3.protocolName)
-//                    //return OpenVPN.protocolName
-//                }
-//            }
-//
-//            setActiveProtocol(activeProtocol: IPSecV3.protocolName)
-//        }
         return IPSecV3.protocolName
     }
 }

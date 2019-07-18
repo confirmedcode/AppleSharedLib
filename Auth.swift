@@ -155,7 +155,7 @@ class Auth: NSObject {
         }
         
         return Promise { seal in
-            sessionManager.request(Global.signinURL, method: .post, parameters : signinParams).responseJSON { response in
+            sessionManager.request(Global.signinURL, method: .post, parameters : signinParams, headers: headersForRequest()).responseJSON { response in
                 switch response.result {
                 case .success:
                     if response.response?.statusCode == 200 {
@@ -414,7 +414,7 @@ class Auth: NSObject {
         }
         
         let parameters: Parameters = parametersForValues(email: email, password: password, passwordConfirmation: passwordConfirmation)
-        Alamofire.request(Global.createUserURL, method: .post, parameters : parameters).responseJSON { response in
+        Alamofire.request(Global.createUserURL, method: .post, parameters : parameters, headers: headersForRequest()).responseJSON { response in
             let serverResponse = processServerResponse(data: response.data)
             if let status = response.response?.statusCode, let eCode = serverResponse.code, status == 200, eCode == Global.kEmailNotConfirmed {
                 DDLogInfo("User created")
@@ -463,7 +463,7 @@ class Auth: NSObject {
         
         getCookie()
             .then { promise in
-                sessionManager.request(Global.subscriptionReceiptUploadURL, method: .post, parameters : parameters).validate().responseJSON()
+                sessionManager.request(Global.subscriptionReceiptUploadURL, method: .post, parameters : parameters, headers: headersForRequest()).validate().responseJSON()
             }
             .done { json, response in
                 
@@ -506,7 +506,7 @@ class Auth: NSObject {
         
         getCookie()
             .then { promise in
-                sessionManager.request(Global.addEmailToUserURL, method: .post, parameters : parameters).responseJSON()
+                sessionManager.request(Global.addEmailToUserURL, method: .post, parameters : parameters, headers: headersForRequest()).responseJSON()
             }
             .then { json, response in
                 waitAtLeast.then { return Promise<(json: Any, response: PMKAlamofireDataResponse)>.value((json, response)) }
@@ -577,7 +577,7 @@ class Auth: NSObject {
         
         getCookie()
             .then { promise in
-                sessionManager.request(Global.getKeyURL, method: .post, parameters : parameters).responseJSON()
+                sessionManager.request(Global.getKeyURL, method: .post, parameters : parameters, headers: headersForRequest()).responseJSON()
             }
             .done { json, response in
                 
@@ -630,29 +630,31 @@ class Auth: NSObject {
     /*
      * API to get subscription tier from server
      */
-    public static func getActiveSubscriptions( callback: @escaping (_ status: Bool, _ didCompleteCall: Bool, _ reason: String, _ response : Array<Dictionary<String, Any>>?) -> Void) {
+    public static func getActiveSubscriptions( callback: @escaping (_ hasActiveSubscription: Bool, _ error: Int, _ errorMessage : String, _ response : Array<Dictionary<String, Any>>?) -> Void) {
         
         let sessionManager = Alamofire.SessionManager.default
         sessionManager.retrier = CookieHandler()
         
+        let parameters: Parameters = parametersForValues()
+        
         getCookie()
             .then {_ in
-                sessionManager.request(Global.activeSubscriptionInformationURL, method: .post).validate().responseJSON()
+                sessionManager.request(Global.activeSubscriptionInformationURL, method: .post, parameters : parameters, headers: headersForRequest()).validate().responseJSON()
             }
             .done { json, response in
                 if let sub = json as? Array<Dictionary<String, Any>>, !sub.isEmpty {
-                    callback(true, true, "", sub)
+                    callback(true, 0, "", sub)
                 }
                 else {
-                    callback(false, false, "No active subscriptions.", nil)
+                    callback(false, Global.kMissingPaymentErrorCode, "No active subscriptions.", nil)
                 }
             }
             .catch { error in
                 if signInError == Global.kEmailNotConfirmed {
-                    callback(false, false, Global.errorMessageForError(eCode: Global.kEmailNotConfirmed), nil)
+                    callback(false, Global.kEmailNotConfirmed, Global.errorMessageForError(eCode: Global.kEmailNotConfirmed), nil)
                 }
                 else {
-                    callback(false, false, Global.errorMessageForError(eCode: Global.kUnknownError), nil)
+                    callback(false, Global.kUnknownError, Global.errorMessageForError(eCode: Global.kUnknownError), nil)
                     signInError = Global.kUnknownError
                 }
         }
@@ -728,6 +730,18 @@ class Auth: NSObject {
     
     
     //MARK: - HELPER FUNCTIONS
+    
+    private static func headersForRequest() -> HTTPHeaders  {
+        var headers = [String:String]()
+        
+        headers["Confirmed-App-Platform"] = "iOS"
+        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+            headers["Confirmed-App-Version"] = appVersion
+        }
+        Alamofire.SessionManager.default.session.configuration.httpAdditionalHeaders = headers
+        
+        return headers
+    }
     
     /*
      * Single place for creating post data
